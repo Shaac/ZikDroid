@@ -18,18 +18,10 @@
 package me.shaac.zikdroid
 
 import org.scaloid.common._
-import android.os.Build
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothDevice
-import android.content.Context.BLUETOOTH_SERVICE
 
-import scala.util.matching.Regex
-
-import scala.collection.JavaConversions._
+import Bluetooth._
 
 class ZikDroid extends SActivity {
-  val mac = "90:03:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}"
 
   onCreate {
     lazy val foo = new STextView("This is ZikDroid")
@@ -39,14 +31,7 @@ class ZikDroid extends SActivity {
       }
       foo.here
     } padding 20.dip
-    var adapter : BluetoothAdapter =
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
-        getSystemService(BLUETOOTH_SERVICE).asInstanceOf[BluetoothManager]
-          .getAdapter
-      else
-        BluetoothAdapter.getDefaultAdapter
-    val devices = adapter.getBondedDevices
-    devices.filter(_.getAddress matches mac)
+    val devices = getZikDevices(getApplicationContext)
     devices foreach {i => foo.text += "\n" + i.getName}
   }
 }
