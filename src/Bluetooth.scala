@@ -33,7 +33,7 @@ object Bluetooth {
   private val mac =
     "90:03:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}"
 
-  private val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
+  val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
 
   private def getAdapter(context: Context): BluetoothAdapter =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
