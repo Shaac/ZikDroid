@@ -43,10 +43,7 @@ class ZikDroid extends SActivity {
   }
 
   def readSocket {
-    input map { _ skip 7 }
-    val data = new Array[Byte](1024)
-    val value = input map { _ read data } map { new String(data, 0, _) }
-    val xml = value map XML.loadString
+    val xml = read
     if (xml.isDefined) {
       val battery = (xml.get \\ "battery" \ "@level").toString
       foo.text = "Battery: " + battery
@@ -67,6 +64,12 @@ class ZikDroid extends SActivity {
     }
   }
 
+  def read: Option[scala.xml.Elem] = {
+    skip(7)
+    val data = new Array[Byte](1024)
+    val size = input flatMap { x => Try(x read data).toOption }
+    size map { new String(data, 0, _) } map { XML.loadString }
+  }
   def skip(i: Int): Unit = Try(input map { _ skip i })
   def write(data: Array[Byte]): Unit = Try(output map { _ write data })
 
