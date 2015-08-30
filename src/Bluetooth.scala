@@ -54,7 +54,14 @@ object Bluetooth {
   def createSocket(device: BluetoothDevice): Try[BluetoothSocket] =
     Try(device createRfcommSocketToServiceRecord uuid)
 
-  def connect(device: BluetoothDevice): Try[BluetoothSocket] =
+  def connect(device: BluetoothDevice): Try[BluetoothSocket] = {
     // TODO use BluetoothAdapter.isDiscovering to cancel if discovering
-    createSocket(device).filter(socket => Try(socket.connect).isSuccess)
+    try {
+      val socket = createSocket(device)
+      socket.get.connect
+      socket
+    } catch {
+      case e: java.io.IOException => Try(throw e)
+    }
+  }
 }

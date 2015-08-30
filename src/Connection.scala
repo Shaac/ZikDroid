@@ -41,6 +41,11 @@ class Connection(device: BluetoothDevice) {
         write(Array[Byte](0, 3, 0)) && skip(1024)
     }
 
+  def reconnect: Boolean = {
+    disconnect
+    connect
+  }
+
   def disconnect {
     Try(socket map { _.close })
     socket = None
