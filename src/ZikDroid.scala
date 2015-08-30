@@ -21,12 +21,7 @@ import android.bluetooth.BluetoothDevice
 
 import org.scaloid.common._
 
-import android.util.Log
 import android.widget.Toast
-
-import java.io.{InputStream, OutputStream}
-
-import scala.util.{Try, Success, Failure}
 
 class ZikDroid extends SActivity {
   var connection: Option[Connection] = None
