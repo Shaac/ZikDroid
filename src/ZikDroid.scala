@@ -67,6 +67,21 @@ class ZikDroid extends SActivity {
     }
   }
 
+  def skip(i: Int): Unit = Try(input map { _ skip i })
+  def write(data: Array[Byte]): Unit = Try(output map { _ write data })
+
+  def connect {
+    zik map Bluetooth.connect match {
+      case None => foo.text += "No Zik paired"
+      case Some(Failure(e)) => toast("Connection error: " + e.getMessage)
+      case Some(Success(socket)) =>
+        output = Try(socket.getOutputStream).toOption
+        input = Try(socket.getInputStream).toOption
+        write(Array[Byte](0, 3, 0))
+        skip(1024)
+    }
+  }
+
   lazy val foo = new STextView("This is ZikDroid")
   onCreate {
     contentView = new SVerticalLayout {
@@ -74,19 +89,12 @@ class ZikDroid extends SActivity {
         case t: STextView => t textSize 20.dip
       }
       foo.here
+      SButton("Connect") onClick connect
       SButton("Battery") onClick getBattery
       SButton("Read") onClick readSocket
     } padding 20.dip
 
     selectZik
-    zik map Bluetooth.connect match {
-      case None => foo.text += "No Zik paired"
-      case Some(Failure(e)) => toast("Connection error: " + e.getMessage)
-      case Some(Success(socket)) =>
-        output = Try(socket.getOutputStream).toOption
-        input = Try(socket.getInputStream).toOption
-        output map { _ write Array[Byte](0, 3, 0) }
-        input map { _ skip 1024 }
-    }
+    connect
   }
 }
