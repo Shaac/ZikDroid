@@ -38,16 +38,9 @@ class ZikDroid extends SActivity {
   var zik: Option[BluetoothDevice] = None
 
   def getBattery {
-    Log.i("ZikDroid", "Getting battery status")
-    output map { _ write getRequest("/api/system/battery/get") }
-  }
-
-  def readSocket {
-    val xml = read
-    if (xml.isDefined) {
-      val battery = (xml.get \\ "battery" \ "@level").toString
-      foo.text = "Battery: " + battery
-    }
+    write(getRequest("/api/system/battery/get"))
+    val battery = read map { xml => (xml \\ "battery" \ "@level").toString }
+    battery map (value => foo.text = "Battery: " + value)
   }
 
   def toast(message: String) =
@@ -94,7 +87,6 @@ class ZikDroid extends SActivity {
       foo.here
       SButton("Connect") onClick connect
       SButton("Battery") onClick getBattery
-      SButton("Read") onClick readSocket
     } padding 20.dip
 
     selectZik
