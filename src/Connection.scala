@@ -55,9 +55,9 @@ class Connection(device: BluetoothDevice) {
     output = None
   }
 
-  def getBattery: Option[String] = {
-    write(getRequest("/api/system/battery/get"))
-    read map { xml => (xml \\ "battery" \ "@level").toString }
+  def getBattery: Option[Int] = {
+    write(getRequest(BATTERY))
+    read flatMap (batteryLevel(_).toOption)
   }
 
   private def read: Option[scala.xml.Elem] = {

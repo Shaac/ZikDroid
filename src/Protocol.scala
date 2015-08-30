@@ -17,7 +17,14 @@
 
 package me.shaac.zikdroid
 
+import scala.util.Try
+
 object Protocol {
+  val BATTERY = "/api/system/battery/get"
+
+  def batteryLevel(xml: scala.xml.Elem): Try[Int] =
+    Try((xml \\ "battery" \ "@level").toString.toInt)
+
   private def pack(request: String): Array[Byte] =
     Array[Byte](0, (request.size + 3).toByte, 0x80.toByte) ++ request.getBytes
 
