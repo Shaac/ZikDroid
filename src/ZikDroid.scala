@@ -68,7 +68,8 @@ class ZikDroid extends SActivity {
 }
 class AlarmReceiver extends BroadcastReceiver {
   def onReceive(context: Context, intent: Intent) {
-    context startService (new Intent(context, classOf[MyService]))
+    implicit val ctx = context
+    context startService SIntent[MyService]
   }
 }
 
