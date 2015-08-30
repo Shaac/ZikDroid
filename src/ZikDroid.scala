@@ -17,7 +17,12 @@
 
 package me.shaac.zikdroid
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
+import android.content.{BroadcastReceiver, Context, Intent}
+import android.util.Log
+import android.os.SystemClock
 
 import org.scaloid.common._
 
@@ -76,5 +81,18 @@ class ZikDroid extends SActivity {
 
     selectZik
     connect
+    val intent = PendingIntent.getBroadcast(this, 0, SIntent[AlarmReceiver], 0)
+    val am = getSystemService(Context.ALARM_SERVICE).asInstanceOf[AlarmManager]
+    am.setInexactRepeating(
+      AlarmManager.ELAPSED_REALTIME_WAKEUP,
+      AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+      AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+      intent)
+  }
+}
+class AlarmReceiver extends BroadcastReceiver {
+  def onReceive(context: Context, intent: Intent) {
+    Log.i("ZikDroid", "ALARM!")
+    Toast.makeText(context, "alarm hit", Toast.LENGTH_SHORT).show
   }
 }
