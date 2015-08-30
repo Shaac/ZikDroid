@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this ZikDroid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with ZikDroid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package me.shaac.zikdroid
