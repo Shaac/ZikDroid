@@ -17,6 +17,8 @@
 
 package me.shaac.zikdroid
 
+import android.bluetooth.BluetoothDevice
+
 import org.scaloid.common._
 
 import Bluetooth._
@@ -32,6 +34,7 @@ import scala.xml._
 class ZikDroid extends SActivity {
   var output: OutputStream = null
   var input: InputStream = null
+  var zik: Option[BluetoothDevice] = None
 
   def getBattery {
     Log.i("ZikDroid", "Getting battery status")
@@ -48,7 +51,15 @@ class ZikDroid extends SActivity {
     foo.text = "Battery: " + battery
   }
 
-    lazy val foo = new STextView("This is ZikDroid")
+  def selectZik {
+    val devices = getZikDevices(getApplicationContext)
+    zik = devices.size match {
+      case 0 => None
+      case _ => Some(devices.head) // TODO let user choose if several devices
+    }
+  }
+
+  lazy val foo = new STextView("This is ZikDroid")
   onCreate {
     contentView = new SVerticalLayout {
       style {
@@ -58,15 +69,16 @@ class ZikDroid extends SActivity {
       SButton("Battery") onClick getBattery
       SButton("Read") onClick readSocket
     } padding 20.dip
-    val devices = getZikDevices(getApplicationContext)
-    devices foreach {i => foo.text += "\n" + i.getName}
-    val zik = devices.head
-    val socket = zik.createRfcommSocketToServiceRecord(Bluetooth.uuid)
-    socket.connect
-    output = socket.getOutputStream()
-    output.write(Array[Byte](0, 3, 0))
-    input = new BufferedInputStream(socket.getInputStream())
-    val data = new Array[Byte](1024)
-    val read = input.read(data)
+
+    selectZik
+    if (zik.isDefined) {
+      val socket = zik.get.createRfcommSocketToServiceRecord(Bluetooth.uuid)
+      socket.connect
+      output = socket.getOutputStream()
+      output.write(Array[Byte](0, 3, 0))
+      input = new BufferedInputStream(socket.getInputStream())
+      val data = new Array[Byte](1024)
+      val read = input.read(data)
+    }
   }
 }
