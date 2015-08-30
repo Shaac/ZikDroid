@@ -34,12 +34,9 @@ class ZikDroid extends SActivity {
     }
   }
 
-  def toast(message: String) =
-    Toast.makeText(getApplicationContext, message, Toast.LENGTH_LONG).show
-
   def selectZik {
     Bluetooth.getZikDevices match {
-      case Left(e) => toast("Bluetooth error: " + e)
+      case Left(e) => longToast("Bluetooth error: " + e)
       case Right(devices) =>
         zik = devices.size match {
           case 0 => None
@@ -51,19 +48,19 @@ class ZikDroid extends SActivity {
   def reconnect {
     connection map { _.disconnect }
     if (connection map { _.connect } getOrElse false)
-      toast("Reconnected")
+      longToast("Reconnected")
     else
-      toast("Error trying to reconnect")
+      longToast("Error trying to reconnect")
   }
 
   def connect {
     connection = zik map { device => new Connection(device) }
     if (zik.isEmpty)
-      toast("No Zik to connect to")
+      longToast("No Zik to connect to")
     else if (connection map { _.connect} getOrElse false)
-      toast("Connected to " + zik.get.getName)
+      longToast("Connected to " + zik.get.getName)
     else
-      toast("Error trying to connect to " + zik.get.getName)
+      longToast("Error trying to connect to " + zik.get.getName)
   }
 
   lazy val foo = new STextView("This is ZikDroid")
