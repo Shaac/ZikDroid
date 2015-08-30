@@ -19,7 +19,6 @@ package me.shaac.zikdroid
 
 import android.annotation.TargetApi
 import android.bluetooth.{BluetoothAdapter, BluetoothDevice, BluetoothSocket}
-import android.os.Build
 
 import java.io.{InputStream, OutputStream}
 
@@ -43,13 +42,6 @@ class Connection(device: BluetoothDevice) {
         input = Try(sock.getInputStream).toOption
         write(Array[Byte](0, 3, 0)) && skip(1024)
     }
-
-  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-  def isConnected: Boolean =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-      socket map { _.isConnected } getOrElse false
-    else
-      false
 
   def reconnect: Boolean = {
     disconnect
