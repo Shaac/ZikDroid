@@ -22,11 +22,8 @@ import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
 import android.content.{BroadcastReceiver, Context, Intent}
 import android.util.Log
-import android.os.SystemClock
 
 import org.scaloid.common._
-
-import android.widget.Toast
 
 class ZikDroid extends SActivity {
   val bluetooth = new LocalServiceConnection[MyService]
@@ -58,8 +55,7 @@ class ZikDroid extends SActivity {
     zik map { device => bluetooth(_.associate(device)) }
     bluetooth(_.connect)
     val intent = PendingIntent.getBroadcast(this, 0, SIntent[AlarmReceiver], 0)
-    val am = getSystemService(Context.ALARM_SERVICE).asInstanceOf[AlarmManager]
-    am.setInexactRepeating(
+    alarmManager.setInexactRepeating(
       AlarmManager.ELAPSED_REALTIME_WAKEUP,
       AlarmManager.INTERVAL_FIFTEEN_MINUTES,
       AlarmManager.INTERVAL_FIFTEEN_MINUTES,
