@@ -51,12 +51,17 @@ class ZikDroid extends SActivity {
   }
 
   def reconnect {
-    if (connection map { _.connect } getOrElse false)
-      toast("Reconnected")
-    else
-      toast("Error trying to reconnect")
+    if (connection map { _.isConnected } getOrElse true)
+      toast("Already connected")
+    else {
+      connection map { _.disconnect }
+      if (connection map { _.connect } getOrElse false)
+        toast("Reconnected")
+      else
+        toast("Error trying to reconnect")
+    }
   }
-  def disconnect { connection map { _.disconnect }}
+
   def connect {
     connection = zik map { device => new Connection(device) }
     if (zik.isEmpty)
@@ -75,8 +80,10 @@ class ZikDroid extends SActivity {
       }
       foo.here
       SButton("Reconnect") onClick reconnect
-      SButton("Disconnect") onClick disconnect
       SButton("Battery") onClick getBattery
+      SButton("Connected?") onClick {
+        toast((connection.get.isConnected).toString)
+      }
     } padding 20.dip
 
     selectZik
