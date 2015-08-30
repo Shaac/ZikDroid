@@ -25,6 +25,7 @@ import Bluetooth._
 import Protocol._
 
 import android.util.Log
+import android.widget.Toast
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -51,11 +52,17 @@ class ZikDroid extends SActivity {
     foo.text = "Battery: " + battery
   }
 
+  def toast(message: String) =
+    Toast.makeText(getApplicationContext, message, Toast.LENGTH_LONG).show
+
   def selectZik {
-    val devices = getZikDevices
-    zik = devices.size match {
-      case 0 => None
-      case _ => Some(devices.head) // TODO let user choose if several devices
+    getZikDevices match {
+      case Left(e) => toast("Bluetooth error: " + e)
+      case Right(devices) =>
+        zik = devices.size match {
+          case 0 => None
+          case _ => Some(devices.head) // TODO let user choose when > 1
+        }
     }
   }
 

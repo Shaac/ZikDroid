@@ -32,13 +32,16 @@ object Bluetooth {
 
   val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
 
-  // Get bluetooth adapter, or None if no bluetooth hardware
-  private def getAdapter: Option[BluetoothAdapter] =
+  private def getBondedDevices: Either[String, mutable.Set[BluetoothDevice]] =
     BluetoothAdapter.getDefaultAdapter match {
-      case adapter: BluetoothAdapter => Some(adapter)
-      case _ => None
+      case null => Left("No Bluetooth hardware.")
+      case adapter: BluetoothAdapter => adapter.getBondedDevices match {
+        case null => Left("Error getting bonded devices.")
+        case set: java.util.Set[BluetoothDevice] => Right(set)
+      }
     }
 
-  def getZikDevices: mutable.Set[BluetoothDevice] =
-    getAdapter.get.getBondedDevices.filter(_.getAddress matches mac)
+  def getZikDevices: Either[String, mutable.Set[BluetoothDevice]] =
+    for (devices <- getBondedDevices.right)
+      yield devices.filter(_.getAddress matches mac)
 }
