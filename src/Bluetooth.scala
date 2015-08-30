@@ -32,10 +32,16 @@ object Bluetooth {
 
   private val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
 
-  private def getBondedDevices: Either[String, mutable.Set[BluetoothDevice]] =
+  def getAdapter: Option[BluetoothAdapter] =
     BluetoothAdapter.getDefaultAdapter match {
-      case null => Left("No Bluetooth hardware.")
-      case adapter: BluetoothAdapter => adapter.getBondedDevices match {
+      case adapter: BluetoothAdapter => Some(adapter)
+      case _ => None
+    }
+
+  private def getBondedDevices: Either[String, mutable.Set[BluetoothDevice]] =
+    getAdapter match {
+      case None => Left("No Bluetooth hardware.")
+      case Some(adapter) => adapter.getBondedDevices match {
         case null => Left("Error getting bonded devices.")
         case set: java.util.Set[BluetoothDevice] => Right(set)
       }

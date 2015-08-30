@@ -21,33 +21,26 @@ import android.bluetooth.BluetoothDevice
 
 import org.scaloid.common._
 
-import Bluetooth._
-import Protocol._
-
 import android.util.Log
 import android.widget.Toast
 
 import java.io.{InputStream, OutputStream}
 
 import scala.util.{Try, Success, Failure}
-import scala.xml._
 
 class ZikDroid extends SActivity {
-  var output: Option[OutputStream] = None
-  var input: Option[InputStream] = None
+  var connection: Option[Connection] = None
   var zik: Option[BluetoothDevice] = None
 
   def getBattery {
-    write(getRequest("/api/system/battery/get"))
-    val battery = read map { xml => (xml \\ "battery" \ "@level").toString }
-    battery map (value => foo.text = "Battery: " + value)
+    connection flatMap { _.getBattery } map { i => foo.text = "Battery: " + i }
   }
 
   def toast(message: String) =
     Toast.makeText(getApplicationContext, message, Toast.LENGTH_LONG).show
 
   def selectZik {
-    getZikDevices match {
+    Bluetooth.getZikDevices match {
       case Left(e) => toast("Bluetooth error: " + e)
       case Right(devices) =>
         zik = devices.size match {
@@ -57,25 +50,14 @@ class ZikDroid extends SActivity {
     }
   }
 
-  def read: Option[scala.xml.Elem] = {
-    skip(7)
-    val data = new Array[Byte](1024)
-    val size = input flatMap { x => Try(x read data).toOption }
-    size map { new String(data, 0, _) } map { XML.loadString }
-  }
-  def skip(i: Int): Unit = Try(input map { _ skip i })
-  def write(data: Array[Byte]): Unit = Try(output map { _ write data })
-
   def connect {
-    zik map Bluetooth.connect match {
-      case None => foo.text += "No Zik paired"
-      case Some(Failure(e)) => toast("Connection error: " + e.getMessage)
-      case Some(Success(socket)) =>
-        output = Try(socket.getOutputStream).toOption
-        input = Try(socket.getInputStream).toOption
-        write(Array[Byte](0, 3, 0))
-        skip(1024)
-    }
+    connection = zik map { device => new Connection(device) }
+    if (zik.isEmpty)
+      toast("No Zik to connect to")
+    else if (connection map { _.connect} getOrElse false)
+      toast("Connected to " + zik.get.getName)
+    else
+      toast("Error trying to connect to " + zik.get.getName)
   }
 
   lazy val foo = new STextView("This is ZikDroid")
