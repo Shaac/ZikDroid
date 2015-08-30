@@ -68,6 +68,7 @@ class ZikDroid extends SActivity {
 }
 class AlarmReceiver extends BroadcastReceiver {
   def onReceive(context: Context, intent: Intent) {
+    context startService (new Intent(context, classOf[MyService]))
     Log.i("ZikDroid", "ALARM!")
     Toast.makeText(context, "alarm hit", Toast.LENGTH_SHORT).show
   }
@@ -93,5 +94,9 @@ class MyService() extends LocalService {
       case Some(level) => longToast("Battery: " + level)
       case None => reconnect
     }
+  }
+  override def onStartCommand(intent: Intent, x: Int, y: Int) = {
+    getBattery
+    1
   }
 }
