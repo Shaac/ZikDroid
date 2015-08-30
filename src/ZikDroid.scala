@@ -26,31 +26,31 @@ import Protocol._
 
 import android.util.Log
 import android.widget.Toast
-import java.io.BufferedInputStream
-import java.io.InputStream
-import java.io.OutputStream
 
-import scala.util.{Success, Failure}
+import java.io.{InputStream, OutputStream}
+
+import scala.util.{Try, Success, Failure}
 import scala.xml._
 
 class ZikDroid extends SActivity {
-  var output: OutputStream = null
-  var input: InputStream = null
+  var output: Option[OutputStream] = None
+  var input: Option[InputStream] = None
   var zik: Option[BluetoothDevice] = None
 
   def getBattery {
     Log.i("ZikDroid", "Getting battery status")
-    output.write(getRequest("/api/system/battery/get"))
+    output map { _ write getRequest("/api/system/battery/get") }
   }
 
   def readSocket {
+    input map { _ skip 7 }
     val data = new Array[Byte](1024)
-    input.read(data, 0, 7)
-    val n = input.read(data)
-    val value : String = new String(data, 0, n)
-    val xml = XML.loadString(value)
-    val battery = (xml \\ "battery" \ "@level").toString
-    foo.text = "Battery: " + battery
+    val value = input map { _ read data } map { new String(data, 0, _) }
+    val xml = value map XML.loadString
+    if (xml.isDefined) {
+      val battery = (xml.get \\ "battery" \ "@level").toString
+      foo.text = "Battery: " + battery
+    }
   }
 
   def toast(message: String) =
@@ -83,11 +83,10 @@ class ZikDroid extends SActivity {
       case None => foo.text += "No Zik paired"
       case Some(Failure(e)) => toast("Connection error: " + e.getMessage)
       case Some(Success(socket)) =>
-        output = socket.getOutputStream
-        output.write(Array[Byte](0, 3, 0))
-        input = new BufferedInputStream(socket.getInputStream())
-        val data = new Array[Byte](1024)
-        val read = input.read(data)
+        output = Try(socket.getOutputStream).toOption
+        input = Try(socket.getInputStream).toOption
+        output map { _ write Array[Byte](0, 3, 0) }
+        input map { _ skip 1024 }
     }
   }
 }
