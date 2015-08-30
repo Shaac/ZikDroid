@@ -51,6 +51,7 @@ class ZikDroid extends SActivity {
   }
 
   def connect {
+    connection map { _.disconnect }
     connection = zik map { device => new Connection(device) }
     if (zik.isEmpty)
       toast("No Zik to connect to")

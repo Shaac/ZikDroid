@@ -41,6 +41,13 @@ class Connection(device: BluetoothDevice) {
         write(Array[Byte](0, 3, 0)) && skip(1024)
     }
 
+  def disconnect {
+    Try(socket map { _.close })
+    socket = None
+    input = None
+    output = None
+  }
+
   def getBattery: Option[String] = {
     write(getRequest("/api/system/battery/get"))
     read map { xml => (xml \\ "battery" \ "@level").toString }
