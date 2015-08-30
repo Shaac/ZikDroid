@@ -29,15 +29,8 @@ import org.scaloid.common._
 import android.widget.Toast
 
 class ZikDroid extends SActivity {
-  var connection: Option[Connection] = None
+  val bluetooth = new LocalServiceConnection[MyService]
   var zik: Option[BluetoothDevice] = None
-
-  def getBattery {
-    connection flatMap { _.getBattery } match {
-      case Some(level) => foo.text = "Battery: " + level
-      case None => reconnect
-    }
-  }
 
   def selectZik {
     Bluetooth.getZikDevices match {
@@ -50,24 +43,6 @@ class ZikDroid extends SActivity {
     }
   }
 
-  def reconnect {
-    connection map { _.disconnect }
-    if (connection map { _.connect } getOrElse false)
-      longToast("Reconnected")
-    else
-      longToast("Error trying to reconnect")
-  }
-
-  def connect {
-    connection = zik map { device => new Connection(device) }
-    if (zik.isEmpty)
-      longToast("No Zik to connect to")
-    else if (connection map { _.connect} getOrElse false)
-      longToast("Connected to " + zik.get.getName)
-    else
-      longToast("Error trying to connect to " + zik.get.getName)
-  }
-
   lazy val foo = new STextView("This is ZikDroid")
   onCreate {
     contentView = new SVerticalLayout {
@@ -75,12 +50,13 @@ class ZikDroid extends SActivity {
         case t: STextView => t textSize 20.dip
       }
       foo.here
-      SButton("Reconnect") onClick reconnect
-      SButton("Battery") onClick getBattery
+      SButton("Reconnect") onClick { bluetooth(_.reconnect) }
+      SButton("Battery") onClick { bluetooth(_.getBattery) }
     } padding 20.dip
 
     selectZik
-    connect
+    zik map { device => bluetooth(_.associate(device)) }
+    bluetooth(_.connect)
     val intent = PendingIntent.getBroadcast(this, 0, SIntent[AlarmReceiver], 0)
     val am = getSystemService(Context.ALARM_SERVICE).asInstanceOf[AlarmManager]
     am.setInexactRepeating(
@@ -94,5 +70,28 @@ class AlarmReceiver extends BroadcastReceiver {
   def onReceive(context: Context, intent: Intent) {
     Log.i("ZikDroid", "ALARM!")
     Toast.makeText(context, "alarm hit", Toast.LENGTH_SHORT).show
+  }
+}
+
+class MyService() extends LocalService {
+  private var connection: Option[Connection] = None
+  def associate(device: BluetoothDevice) {
+    connection = Some(new Connection(device))
+  }
+  def connect {
+    if (connection map { _.connect } getOrElse false)
+      longToast("Connected")
+    else
+      longToast("Error trying to connect")
+  }
+  def reconnect {
+    connection map { _.disconnect }
+    connect
+  }
+  def getBattery {
+    connection flatMap { _.getBattery } match {
+      case Some(level) => longToast("Battery: " + level)
+      case None => reconnect
+    }
   }
 }
