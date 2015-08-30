@@ -52,7 +52,7 @@ class ZikDroid extends SActivity {
   }
 
   def selectZik {
-    val devices = getZikDevices(getApplicationContext)
+    val devices = getZikDevices
     zik = devices.size match {
       case 0 => None
       case _ => Some(devices.head) // TODO let user choose if several devices

@@ -19,9 +19,6 @@ package me.shaac.zikdroid
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
-import android.content.Context
-import android.os.Build
 
 import java.util.UUID
 
@@ -35,13 +32,13 @@ object Bluetooth {
 
   val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
 
-  private def getAdapter(context: Context): BluetoothAdapter =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
-      context.getSystemService(Context.BLUETOOTH_SERVICE)
-        .asInstanceOf[BluetoothManager].getAdapter
-    else
-      BluetoothAdapter.getDefaultAdapter
+  // Get bluetooth adapter, or None if no bluetooth hardware
+  private def getAdapter: Option[BluetoothAdapter] =
+    BluetoothAdapter.getDefaultAdapter match {
+      case adapter: BluetoothAdapter => Some(adapter)
+      case _ => None
+    }
 
-  def getZikDevices(context: Context): mutable.Set[BluetoothDevice] =
-    getAdapter(context).getBondedDevices.filter(_.getAddress matches mac)
+  def getZikDevices: mutable.Set[BluetoothDevice] =
+    getAdapter.get.getBondedDevices.filter(_.getAddress matches mac)
 }
