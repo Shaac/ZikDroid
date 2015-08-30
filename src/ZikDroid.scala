@@ -28,7 +28,10 @@ class ZikDroid extends SActivity {
   var zik: Option[BluetoothDevice] = None
 
   def getBattery {
-    connection flatMap { _.getBattery } map { i => foo.text = "Battery: " + i }
+    connection flatMap { _.getBattery } match {
+      case Some(level) => foo.text = "Battery: " + level
+      case None => reconnect
+    }
   }
 
   def toast(message: String) =
