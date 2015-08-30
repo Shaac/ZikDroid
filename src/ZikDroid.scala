@@ -35,7 +35,7 @@ class ZikDroid extends SActivity {
 
   def getBattery {
     Log.i("ZikDroid", "Getting battery status")
-    getRequest("/api/system/battery/get") foreach { output.write(_) }
+    output.write(getRequest("/api/system/battery/get"))
   }
 
   def readSocket {

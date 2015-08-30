@@ -18,11 +18,11 @@
 package me.shaac.zikdroid
 
 object Protocol {
-  private def pack(request: String): List[Char] =
-    0.toChar :: (request.size + 3).toChar :: 0x80.toChar :: request.toList
+  private def pack(request: String): Array[Byte] =
+    Array[Byte](0, (request.size + 3).toByte, 0x80.toByte) ++ request.getBytes
 
-  def getRequest(command: String): List[Char] = pack("GET " + command)
+  def getRequest(command: String): Array[Byte] = pack("GET " + command)
 
-  def setRequest(command: String, args: String): List[Char] =
+  def setRequest(command: String, args: String): Array[Byte] =
     pack("SET " + command + "?arg=" + args)
 }
