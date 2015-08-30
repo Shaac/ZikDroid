@@ -23,6 +23,7 @@ import java.util.UUID
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+import scala.util.Try
 
 object Bluetooth {
   // Parrot Zik headphones MAC address regex
@@ -44,10 +45,10 @@ object Bluetooth {
     for (devices <- getBondedDevices.right)
       yield devices.filter(_.getAddress matches mac)
 
-  def createSocket(device: BluetoothDevice): Option[BluetoothSocket] =
-    try {
-      Some(device createRfcommSocketToServiceRecord uuid)
-    } catch {
-      case e: java.io.IOException => None
-    }
+  def createSocket(device: BluetoothDevice): Try[BluetoothSocket] =
+    Try(device createRfcommSocketToServiceRecord uuid)
+
+  def connect(device: BluetoothDevice): Try[BluetoothSocket] =
+    // TODO use BluetoothAdapter.isDiscovering to cancel if discovering
+    createSocket(device).filter(socket => Try(socket.connect).isSuccess)
 }

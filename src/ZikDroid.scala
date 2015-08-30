@@ -30,6 +30,7 @@ import java.io.BufferedInputStream
 import java.io.InputStream
 import java.io.OutputStream
 
+import scala.util.{Success, Failure}
 import scala.xml._
 
 class ZikDroid extends SActivity {
@@ -78,16 +79,15 @@ class ZikDroid extends SActivity {
     } padding 20.dip
 
     selectZik
-    val socket = zik flatMap Bluetooth.createSocket
-    if (socket.isEmpty)
-      toast("Bluetooth error: unable to instanciate socket")
-    else {
-      socket.get.connect
-      output = socket.get.getOutputStream
-      output.write(Array[Byte](0, 3, 0))
-      input = new BufferedInputStream(socket.get.getInputStream())
-      val data = new Array[Byte](1024)
-      val read = input.read(data)
+    zik map Bluetooth.connect match {
+      case None => foo.text += "No Zik paired"
+      case Some(Failure(e)) => toast("Connection error: " + e.getMessage)
+      case Some(Success(socket)) =>
+        output = socket.getOutputStream
+        output.write(Array[Byte](0, 3, 0))
+        input = new BufferedInputStream(socket.getInputStream())
+        val data = new Array[Byte](1024)
+        val read = input.read(data)
     }
   }
 }
