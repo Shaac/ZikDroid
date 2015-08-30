@@ -17,8 +17,7 @@
 
 package me.shaac.zikdroid
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
+import android.bluetooth.{BluetoothAdapter, BluetoothDevice, BluetoothSocket}
 
 import java.util.UUID
 
@@ -30,7 +29,7 @@ object Bluetooth {
   private val mac =
     "90:03:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}"
 
-  val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
+  private val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
 
   private def getBondedDevices: Either[String, mutable.Set[BluetoothDevice]] =
     BluetoothAdapter.getDefaultAdapter match {
@@ -44,4 +43,11 @@ object Bluetooth {
   def getZikDevices: Either[String, mutable.Set[BluetoothDevice]] =
     for (devices <- getBondedDevices.right)
       yield devices.filter(_.getAddress matches mac)
+
+  def createSocket(device: BluetoothDevice): Option[BluetoothSocket] =
+    try {
+      Some(device createRfcommSocketToServiceRecord uuid)
+    } catch {
+      case e: java.io.IOException => None
+    }
 }

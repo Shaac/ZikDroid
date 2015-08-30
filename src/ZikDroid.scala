@@ -78,12 +78,14 @@ class ZikDroid extends SActivity {
     } padding 20.dip
 
     selectZik
-    if (zik.isDefined) {
-      val socket = zik.get.createRfcommSocketToServiceRecord(Bluetooth.uuid)
-      socket.connect
-      output = socket.getOutputStream()
+    val socket = zik flatMap Bluetooth.createSocket
+    if (socket.isEmpty)
+      toast("Bluetooth error: unable to instanciate socket")
+    else {
+      socket.get.connect
+      output = socket.get.getOutputStream
       output.write(Array[Byte](0, 3, 0))
-      input = new BufferedInputStream(socket.getInputStream())
+      input = new BufferedInputStream(socket.get.getInputStream())
       val data = new Array[Byte](1024)
       val read = input.read(data)
     }
