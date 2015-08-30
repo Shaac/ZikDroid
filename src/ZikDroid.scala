@@ -69,30 +69,36 @@ class ZikDroid extends SActivity {
 class AlarmReceiver extends BroadcastReceiver {
   def onReceive(context: Context, intent: Intent) {
     context startService (new Intent(context, classOf[MyService]))
-    Log.i("ZikDroid", "ALARM!")
-    Toast.makeText(context, "alarm hit", Toast.LENGTH_SHORT).show
   }
 }
 
 class MyService() extends LocalService {
   private var connection: Option[Connection] = None
   def associate(device: BluetoothDevice) {
+    connection map { _.disconnect }
     connection = Some(new Connection(device))
   }
-  def connect {
-    if (connection map { _.connect } getOrElse false)
-      longToast("Connected")
-    else
-      longToast("Error trying to connect")
-  }
-  def reconnect {
+  def connect: Boolean = connection map { _.connect } getOrElse false
+  def reconnect: Boolean = {
     connection map { _.disconnect }
     connect
   }
   def getBattery {
     connection flatMap { _.getBattery } match {
       case Some(level) => longToast("Battery: " + level)
-      case None => reconnect
+      case None =>
+        selectZik
+        if (reconnect) getBattery else longToast("Reconnection failed")
+    }
+  }
+  def selectZik {
+    Bluetooth.getZikDevices match {
+      case Left(e) => longToast("Bluetooth error: " + e)
+      case Right(devices) =>
+        devices.size match {
+          case 0 => {}
+          case _ => associate(devices.head)
+        }
     }
   }
   override def onStartCommand(intent: Intent, x: Int, y: Int) = {
