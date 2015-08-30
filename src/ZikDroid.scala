@@ -27,6 +27,8 @@ import java.io.BufferedInputStream
 import java.io.InputStream
 import java.io.OutputStream
 
+import scala.xml._
+
 class ZikDroid extends SActivity {
   var output: OutputStream = null
   var input: InputStream = null
@@ -38,12 +40,16 @@ class ZikDroid extends SActivity {
 
   def readSocket {
     val data = new Array[Byte](1024)
-    val n = input.read(data, 0, input.available)
-    Log.i("ZikDroid", "Read " + n + ": " + new String(data))
+    input.read(data, 0, 7)
+    val n = input.read(data)
+    val value : String = new String(data, 0, n)
+    val xml = XML.loadString(value)
+    val battery = (xml \\ "battery" \ "@level").toString
+    foo.text = "Battery: " + battery
   }
 
-  onCreate {
     lazy val foo = new STextView("This is ZikDroid")
+  onCreate {
     contentView = new SVerticalLayout {
       style {
         case t: STextView => t textSize 20.dip

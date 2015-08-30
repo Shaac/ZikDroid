@@ -16,6 +16,8 @@ libraryDependencies += "org.scaloid" %% "scaloid" % "4.0"
 proguardCache in Android += "org.scaloid"
 proguardOptions in Android += "-dontwarn org.scaloid.**"
 
+libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.5"
+
 run <<= run in Android
 install <<= install in Android
 
