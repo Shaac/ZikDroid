@@ -111,9 +111,10 @@ class MyService() extends LocalService {
             BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
           .setContentTitle("ZikDroid")
           .setContentText("Battery level: " + level + "%")
+          .setAutoCancel(true)
         builder setContentIntent pendingActivity[ZikDroid];
         notificationManager.notify(1, builder.build);
-      }
+      } else notificationManager.cancelAll
     }
   1
   }
