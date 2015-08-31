@@ -43,6 +43,8 @@ class ZikDroid extends SActivity {
     }
   }
 
+  def displayBattery(level: Int) { foo.text = "Battery: " + level }
+
   lazy val foo = new STextView("This is ZikDroid")
   onCreate {
     contentView = new SVerticalLayout {
@@ -51,7 +53,7 @@ class ZikDroid extends SActivity {
       }
       foo.here
       SButton("Reconnect") onClick { bluetooth(_.reconnect) }
-      SButton("Battery") onClick { bluetooth(_.getBattery) }
+      SButton("Battery") onClick { bluetooth(_.getBattery map displayBattery) }
     } padding 20.dip
 
     selectZik
