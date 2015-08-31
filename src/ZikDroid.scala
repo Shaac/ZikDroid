@@ -104,7 +104,7 @@ class MyService() extends LocalService {
   override def onStartCommand(intent: Intent, x: Int, y: Int) = {
     getBattery match {
       case None => longToast("Error getting battery")
-      case Some(level) =>
+      case Some(level) => if (level <= 20) {
         val builder = new Builder(this)
           .setSmallIcon(R.drawable.ic_notify)
           .setLargeIcon(
@@ -113,6 +113,7 @@ class MyService() extends LocalService {
           .setContentText("Battery level: " + level + "%")
         builder setContentIntent pendingActivity[ZikDroid];
         notificationManager.notify(1, builder.build);
+      }
     }
   1
   }
