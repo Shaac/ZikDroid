@@ -22,6 +22,8 @@ import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
 import android.content.{BroadcastReceiver, Context, Intent}
 import android.util.Log
+import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationCompat.Builder
 
 import org.scaloid.common._
 
@@ -55,7 +57,8 @@ class ZikDroid extends SActivity {
     zik map { device => bluetooth(_.associate(device)) }
     bluetooth(_.connect)
     val intent = PendingIntent.getBroadcast(this, 0, SIntent[AlarmReceiver], 0)
-    alarmManager.setInexactRepeating(
+    val am = getSystemService(Context.ALARM_SERVICE).asInstanceOf[AlarmManager]
+    am.setInexactRepeating(
       AlarmManager.ELAPSED_REALTIME_WAKEUP,
       AlarmManager.INTERVAL_FIFTEEN_MINUTES,
       AlarmManager.INTERVAL_FIFTEEN_MINUTES,
@@ -100,6 +103,13 @@ class MyService() extends LocalService {
   }
   override def onStartCommand(intent: Intent, x: Int, y: Int) = {
     getBattery
+    val mBuilder =
+      new Builder(this)
+        .setSmallIcon(android.R.drawable.ic_lock_idle_low_battery)
+        .setContentTitle("My notification")
+        .setContentText("Hello World!");
+    mBuilder.setContentIntent(pendingActivity[ZikDroid]);
+    notificationManager.notify(1, mBuilder.build());
     1
   }
 }

@@ -18,6 +18,8 @@ proguardOptions in Android += "-dontwarn org.scaloid.**"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.5"
 
+libraryDependencies += "com.android.support" % "support-v4" % "21.0.3"
+
 run <<= run in Android
 install <<= install in Android
 
