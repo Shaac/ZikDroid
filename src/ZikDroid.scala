@@ -83,14 +83,13 @@ class MyService() extends LocalService {
     connection map { _.disconnect }
     connect
   }
-  def getBattery {
+  def getBattery: Option[Int] =
     connection flatMap { _.getBattery } match {
-      case Some(level) => longToast("Battery: " + level)
+      case Some(level) => Some(level)
       case None =>
         selectZik
-        if (reconnect) getBattery else longToast("Reconnection failed")
+        if (reconnect) getBattery else None
     }
-  }
   def selectZik {
     Bluetooth.getZikDevices match {
       case Left(e) => longToast("Bluetooth error: " + e)
@@ -102,14 +101,16 @@ class MyService() extends LocalService {
     }
   }
   override def onStartCommand(intent: Intent, x: Int, y: Int) = {
-    getBattery
-    val mBuilder =
-      new Builder(this)
-        .setSmallIcon(android.R.drawable.ic_lock_idle_low_battery)
-        .setContentTitle("My notification")
-        .setContentText("Hello World!");
-    mBuilder.setContentIntent(pendingActivity[ZikDroid]);
-    notificationManager.notify(1, mBuilder.build());
-    1
+    getBattery match {
+      case None => longToast("Error getting battery")
+      case Some(level) =>
+        val builder = new Builder(this)
+          .setSmallIcon(android.R.drawable.ic_lock_idle_low_battery)
+          .setContentTitle("ZikDroid")
+          .setContentText("Battery level: " + level + "%")
+        builder setContentIntent pendingActivity[ZikDroid];
+        notificationManager.notify(1, builder.build);
+    }
+  1
   }
 }
