@@ -21,6 +21,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
 import android.content.{BroadcastReceiver, Context, Intent}
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationCompat.Builder
@@ -105,7 +106,9 @@ class MyService() extends LocalService {
       case None => longToast("Error getting battery")
       case Some(level) =>
         val builder = new Builder(this)
-          .setSmallIcon(android.R.drawable.ic_lock_idle_low_battery)
+          .setSmallIcon(R.drawable.ic_notify)
+          .setLargeIcon(
+            BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
           .setContentTitle("ZikDroid")
           .setContentText("Battery level: " + level + "%")
         builder setContentIntent pendingActivity[ZikDroid];
