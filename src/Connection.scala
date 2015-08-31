@@ -60,6 +60,11 @@ class Connection(device: BluetoothDevice) {
     read flatMap (batteryLevel(_).toOption)
   }
 
+  def enableANC(enable: Boolean): Option[Unit] = {
+    write(setRequest(ANC, enable.toString))
+    read map { _ => {} }
+  }
+
   private def read: Option[scala.xml.Elem] = {
     skip(7)
     val data = new Array[Byte](1024)

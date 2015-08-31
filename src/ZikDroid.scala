@@ -52,8 +52,9 @@ class ZikDroid extends SActivity {
         case t: STextView => t textSize 20.dip
       }
       foo.here
-      SButton("Reconnect") onClick { bluetooth(_.reconnect) }
       SButton("Battery") onClick { bluetooth(_.getBattery map displayBattery) }
+      SButton("Enable noise cancellation") onClick { bluetooth(_.enableANC(true)) }
+      SButton("Disable noise cancellation") onClick { bluetooth(_.enableANC(false)) }
     } padding 20.dip
 
     selectZik
@@ -93,6 +94,14 @@ class MyService() extends LocalService {
         selectZik
         if (reconnect) getBattery else None
     }
+  def enableANC(enable: Boolean) {
+    connection flatMap { _.enableANC(enable) } match {
+      case Some(_) => {}
+      case None =>
+        selectZik
+        if (reconnect) enableANC(enable)
+    }
+  }
   def selectZik {
     Bluetooth.getZikDevices match {
       case Left(e) => longToast("Bluetooth error: " + e)

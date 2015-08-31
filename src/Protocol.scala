@@ -20,6 +20,7 @@ package me.shaac.zikdroid
 import scala.util.Try
 
 object Protocol {
+  val ANC = "/api/audio/noise_cancellation/enabled/set"
   val BATTERY = "/api/system/battery/get"
 
   def batteryLevel(xml: scala.xml.Elem): Try[Int] =
