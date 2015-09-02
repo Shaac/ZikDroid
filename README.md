@@ -48,3 +48,12 @@ folder and run the `rasterize.sh` script.
 Run `sbt` in the root directory. From its shell, run `android:package` to
 generate the APK in the bin directory. You can also use the sbt `install` and
 `run` commands if an Android device is connected.
+
+Third parties
+-------------
+
+- [Android SDK plugin](https://github.com/pfn/android-sdk-plugin):
+Modified BSD License;
+- [Progard](http://proguard.sourceforge.net/): GPLv2+
+- [Scala XML](https://github.com/scala/scala-xml): Modified BSD License;
+- [Sclaloid](https://github.com/pocorall/scaloid): Apache License, Version 2.0;
