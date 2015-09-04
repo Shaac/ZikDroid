@@ -19,18 +19,18 @@ package me.shaac.zikdroid
 
 import android.bluetooth.{BluetoothAdapter, BluetoothDevice, BluetoothSocket}
 
-import java.util.UUID
+import java.util.UUID.fromString
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.util.Try
 
 object Bluetooth {
-  // Parrot Zik headphones MAC address regex
-  private val mac =
-    "90:03:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}"
+  // Parrot Zik headphones MAC address regex (90:03:B7 is Parrot vendor id)
+  private val MAC = "90:03:B7:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}"
 
-  private val uuid = UUID.fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
+  // UUID to communicate with Parrot Zik devices
+  private val UUID = fromString("0ef0f502-f0ee-46c9-986c-54ed027807fb")
 
   def getAdapter: Option[BluetoothAdapter] =
     BluetoothAdapter.getDefaultAdapter match {
@@ -49,10 +49,10 @@ object Bluetooth {
 
   def getZikDevices: Either[String, mutable.Set[BluetoothDevice]] =
     for (devices <- getBondedDevices.right)
-      yield devices.filter(_.getAddress matches mac)
+      yield devices.filter(_.getAddress matches MAC)
 
   def createSocket(device: BluetoothDevice): Try[BluetoothSocket] =
-    Try(device createRfcommSocketToServiceRecord uuid)
+    Try(device createRfcommSocketToServiceRecord UUID)
 
   def connect(device: BluetoothDevice): Try[BluetoothSocket] = {
     // TODO use BluetoothAdapter.isDiscovering to cancel if discovering
