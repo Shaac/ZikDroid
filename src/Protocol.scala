@@ -20,17 +20,31 @@ package me.shaac.zikdroid
 import scala.util.Try
 
 object Protocol {
+  // Byte array to send to open a session with device
+  val start = Array[Byte](0, 0, 0)
+
+  // Get byte array to send to get information corresponding to API request
+  def getRequest(request: String): Array[Byte] = pack("GET " + request)
+
+  // Get byte array to send to set values to corresponding API request
+  def setRequest(request: String, arguments: String): Array[Byte] =
+    pack("SET " + request + "?arg=" + arguments)
+
+  // TODO function getting an XML from a byte array: array[7:]
+
+  // Protocol is the following: first 2 bytes are packet size, then a minimal
+  // value byte, and then the bytes of the string message
+  private def pack(request: String): Array[Byte] = {
+    val n = request.size + 3 // Entire size of the final byte array
+    Array[Byte]((n >> 8).toByte, n.toByte, Byte.MinValue) ++ request.getBytes
+  }
+
+  // TODO Move into an API section
   val ANC = "/api/audio/noise_cancellation/enabled/set"
   val BATTERY = "/api/system/battery/get"
-
   def batteryLevel(xml: scala.xml.Elem): Try[Int] =
     Try((xml \\ "battery" \ "@level").toString.toInt)
-
-  private def pack(request: String): Array[Byte] =
-    Array[Byte](0, (request.size + 3).toByte, 0x80.toByte) ++ request.getBytes
-
-  def getRequest(command: String): Array[Byte] = pack("GET " + command)
-
-  def setRequest(command: String, args: String): Array[Byte] =
-    pack("SET " + command + "?arg=" + args)
 }
+
+// They are a few others protocol features, for sending firmware on device for
+// instance, but I would not risk trying it.
