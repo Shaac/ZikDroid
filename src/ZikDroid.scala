@@ -58,11 +58,10 @@ class ZikDroid extends SActivity {
   }
 
   broadcastReceiver(new IntentFilter(Intents.BatteryUpdate)) {
-    (context, intent) =>
-      intent.getAction match {
-        case Intents.BatteryUpdate =>
-          bluetooth(_.getState map { x =>
-          x.batteryLevel map { y => foo.text = "Battery: " + y}  })
-      }
+    (context, intent) => bluetooth(_.getState, None) map refresh
+  }
+
+  def refresh(state: State) {
+    state.batteryLevel map { level => foo text ("Battery: " + level + "%") }
   }
 }
