@@ -23,7 +23,6 @@ import android.bluetooth.{BluetoothAdapter, BluetoothDevice, BluetoothSocket}
 import java.io.{InputStream, OutputStream}
 
 import scala.util.{Try, Success, Failure}
-import scala.xml._
 
 import Protocol._
 
@@ -32,6 +31,8 @@ class Connection(device: BluetoothDevice) {
   private var socket: Option[BluetoothSocket] = None
   private var input: Option[InputStream] = None
   private var output: Option[OutputStream] = None
+  private val state: State = new State
+  private val parser: Parser = new Parser(state)
 
   def connect: Boolean =
     Bluetooth connect device match {
@@ -56,20 +57,22 @@ class Connection(device: BluetoothDevice) {
   }
 
   def getBattery: Option[Int] = {
-    write(getRequest(BATTERY))
-    read flatMap (batteryLevel(_).toOption)
+    write(getRequest(API.BatteryGet))
+    read
+    state.batteryLevel
   }
 
   def enableANC(enable: Boolean): Option[Unit] = {
-    write(setRequest(ANC, enable.toString))
-    read map { _ => {} }
+    write(setRequest(API.ANCEnableSet, enable.toString))
+    read
+    if (input.isEmpty) None else Some(Unit)
   }
 
-  private def read: Option[scala.xml.Elem] = {
+  private def read {
     skip(7)
     val data = new Array[Byte](1024)
     val size = input flatMap { x => Try(x read data).toOption }
-    size map { new String(data, 0, _) } map { XML.loadString }
+    size map { new String(data, 0, _) } map parser.parse
   }
   private def skip(i: Int): Boolean =
     Try(input map { _ skip i }).toOption != None

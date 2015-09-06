@@ -54,6 +54,5 @@ Third parties
 
 - [Android SDK plugin](https://github.com/pfn/android-sdk-plugin):
 Modified BSD License;
-- [Progard](http://proguard.sourceforge.net/): GPLv2+
-- [Scala XML](https://github.com/scala/scala-xml): Modified BSD License;
-- [Sclaloid](https://github.com/pocorall/scaloid): Apache License, Version 2.0;
+- [Progard](http://proguard.sourceforge.net/): GPLv2+;
+- [Sclaloid](https://github.com/pocorall/scaloid): Apache License, Version 2.0.

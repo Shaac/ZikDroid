@@ -17,8 +17,6 @@
 
 package me.shaac.zikdroid
 
-import scala.util.Try
-
 object Protocol {
   // Byte array to send to open a session with device
   val start = Array[Byte](0, 0, 0)
@@ -38,12 +36,6 @@ object Protocol {
     val n = request.size + 3 // Entire size of the final byte array
     Array[Byte]((n >> 8).toByte, n.toByte, Byte.MinValue) ++ request.getBytes
   }
-
-  // TODO Move into an API section
-  val ANC = "/api/audio/noise_cancellation/enabled/set"
-  val BATTERY = "/api/system/battery/get"
-  def batteryLevel(xml: scala.xml.Elem): Try[Int] =
-    Try((xml \\ "battery" \ "@level").toString.toInt)
 }
 
 // They are a few others protocol features, for sending firmware on device for
