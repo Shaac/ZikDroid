@@ -21,15 +21,11 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
 import android.content.{BroadcastReceiver, Context, Intent, IntentFilter}
-import android.graphics.BitmapFactory
-import android.util.Log
-import android.support.v4.app.NotificationCompat
-import android.support.v4.app.NotificationCompat.Builder
 
 import org.scaloid.common._
 
 class ZikDroid extends SActivity {
-  val bluetooth = new LocalServiceConnection[MyService]
+  val bluetooth = new LocalServiceConnection[BoundService]
   var zik: Option[BluetoothDevice] = None
   val filterBattery = new IntentFilter(Intents.BatteryUpdate)
 
@@ -89,64 +85,7 @@ class ZikDroid extends SActivity {
 class AlarmReceiver extends BroadcastReceiver {
   def onReceive(context: Context, intent: Intent) {
     implicit val ctx = context
-    context startService SIntent[MyService]
+    context startService SIntent[BoundService]
   }
 }
 
-class MyService() extends LocalService {
-  private var connection: Option[Connection] = None
-
-  def getState: Option[State] = connection map { _.state }
-
-  def associate(device: BluetoothDevice) {
-    connection map { _.disconnect }
-    connection = Some(new Connection(device, this))
-  }
-  def connect: Boolean = connection map { _.connect } getOrElse false
-  def reconnect: Boolean = {
-    connection map { _.disconnect }
-    connect
-  }
-  def getBattery: Option[Int] =
-    connection flatMap { _.getBattery } match {
-      case Some(level) => Some(level)
-      case None =>
-        selectZik
-        if (reconnect) getBattery else None
-    }
-  def enableANC(enable: Boolean) {
-    connection flatMap { _.enableANC(enable) } match {
-      case Some(_) => {}
-      case None =>
-        selectZik
-        if (reconnect) enableANC(enable)
-    }
-  }
-  def selectZik {
-    Bluetooth.getZikDevices match {
-      case Left(e) => longToast("Bluetooth error: " + e)
-      case Right(devices) =>
-        devices.size match {
-          case 0 => {}
-          case _ => associate(devices.head)
-        }
-    }
-  }
-  override def onStartCommand(intent: Intent, x: Int, y: Int) = {
-    getBattery match {
-      case None => longToast("Error getting battery")
-      case Some(level) => if (level <= 20) {
-        val builder = new Builder(this)
-          .setSmallIcon(R.drawable.ic_notify)
-          .setLargeIcon(
-            BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
-          .setContentTitle("ZikDroid")
-          .setContentText("Battery level: " + level + "%")
-          .setAutoCancel(true)
-        builder setContentIntent pendingActivity[ZikDroid];
-        notificationManager.notify(1, builder.build);
-      } else notificationManager.cancelAll
-    }
-  1
-  }
-}
