@@ -18,6 +18,7 @@
 package me.shaac.zikdroid
 
 import android.annotation.TargetApi
+import android.content.Context
 import android.bluetooth.{BluetoothAdapter, BluetoothDevice, BluetoothSocket}
 
 import java.io.{InputStream, OutputStream}
@@ -26,13 +27,13 @@ import scala.util.{Try, Success, Failure}
 
 import Protocol._
 
-class Connection(device: BluetoothDevice) {
+class Connection(device: BluetoothDevice, context: Context) {
   private var adapter: Option[BluetoothAdapter] = Bluetooth.getAdapter
   private var socket: Option[BluetoothSocket] = None
   private var input: Option[InputStream] = None
   private var output: Option[OutputStream] = None
-  private val state: State = new State
-  private val parser: Parser = new Parser(state)
+  val state: State = new State
+  private val parser: Parser = new Parser(state, context)
 
   def connect: Boolean =
     Bluetooth connect device match {

@@ -20,7 +20,7 @@ package me.shaac.zikdroid
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
-import android.content.{BroadcastReceiver, Context, Intent}
+import android.content.{BroadcastReceiver, Context, Intent, IntentFilter}
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.support.v4.app.NotificationCompat
@@ -31,6 +31,7 @@ import org.scaloid.common._
 class ZikDroid extends SActivity {
   val bluetooth = new LocalServiceConnection[MyService]
   var zik: Option[BluetoothDevice] = None
+  val filterBattery = new IntentFilter(Intents.BatteryUpdate)
 
   def selectZik {
     Bluetooth.getZikDevices match {
@@ -43,8 +44,6 @@ class ZikDroid extends SActivity {
     }
   }
 
-  def displayBattery(level: Int) { foo.text = "Battery: " + level }
-
   lazy val foo = new STextView("This is ZikDroid")
   onCreate {
     contentView = new SVerticalLayout {
@@ -52,7 +51,7 @@ class ZikDroid extends SActivity {
         case t: STextView => t textSize 20.dip
       }
       foo.here
-      SButton("Battery") onClick { bluetooth(_.getBattery map displayBattery) }
+      SButton("Battery") onClick { bluetooth(_.getBattery) }
       SButton("Enable noise cancellation") onClick { bluetooth(_.enableANC(true)) }
       SButton("Disable noise cancellation") onClick { bluetooth(_.enableANC(false)) }
     } padding 20.dip
@@ -68,6 +67,24 @@ class ZikDroid extends SActivity {
       AlarmManager.INTERVAL_FIFTEEN_MINUTES,
       intent)
   }
+  private val receiver = new BroadcastReceiver {
+    def onReceive(context: Context, intent: Intent) {
+      intent.getAction match {
+        case Intents.BatteryUpdate =>
+          bluetooth(_.getState map { x =>
+          x.batteryLevel map { y => foo.text = "Battery: " + y}  })
+      }
+    }
+  }
+
+  override def onPause() {
+    unregisterReceiver(receiver)
+    super.onPause
+  }
+  override def onResume() {
+    super.onResume
+    registerReceiver(receiver, filterBattery)
+  }
 }
 class AlarmReceiver extends BroadcastReceiver {
   def onReceive(context: Context, intent: Intent) {
@@ -78,9 +95,12 @@ class AlarmReceiver extends BroadcastReceiver {
 
 class MyService() extends LocalService {
   private var connection: Option[Connection] = None
+
+  def getState: Option[State] = connection map { _.state }
+
   def associate(device: BluetoothDevice) {
     connection map { _.disconnect }
-    connection = Some(new Connection(device))
+    connection = Some(new Connection(device, this))
   }
   def connect: Boolean = connection map { _.connect } getOrElse false
   def reconnect: Boolean = {

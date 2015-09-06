@@ -17,6 +17,7 @@
 
 package me.shaac.zikdroid
 
+import android.content.Context
 import android.util.Xml
 
 import java.io.InputStream
@@ -26,7 +27,7 @@ import org.xmlpull.v1.XmlPullParser._
 
 import scala.util.Try
 
-class Parser(state: State) {
+class Parser(state: State, implicit val ctx: Context) {
   def parse(xml: InputStream) {
     val parser = Xml.newPullParser
     parser.setInput(xml, null)
@@ -76,5 +77,6 @@ class Parser(state: State) {
     state.batteryLevel =
       Try(parser.getAttributeValue(null, "level").toInt).toOption
     state.batteryState = Try(parser.getAttributeValue(null, "state")).toOption
+    Intents.broadcastBatteryUpdate
   }
 }
