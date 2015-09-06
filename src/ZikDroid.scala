@@ -55,13 +55,7 @@ class ZikDroid extends SActivity {
     selectZik
     zik map { device => bluetooth(_.associate(device)) }
     bluetooth(_.connect)
-    val intent = PendingIntent.getBroadcast(this, 0, SIntent[AlarmReceiver], 0)
-    val am = getSystemService(Context.ALARM_SERVICE).asInstanceOf[AlarmManager]
-    am.setInexactRepeating(
-      AlarmManager.ELAPSED_REALTIME_WAKEUP,
-      AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-      AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-      intent)
+    Alarm.set
   }
   private val receiver = new BroadcastReceiver {
     def onReceive(context: Context, intent: Intent) {
@@ -82,10 +76,3 @@ class ZikDroid extends SActivity {
     registerReceiver(receiver, filterBattery)
   }
 }
-class AlarmReceiver extends BroadcastReceiver {
-  def onReceive(context: Context, intent: Intent) {
-    implicit val ctx = context
-    context startService SIntent[BoundService]
-  }
-}
-
