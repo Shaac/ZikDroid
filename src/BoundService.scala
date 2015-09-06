@@ -60,7 +60,7 @@ class BoundService extends LocalService {
       case Right(devices) =>
         devices.size match {
           case 0 => {}
-          case _ => associate(devices.head)
+          case _ => associate(devices.head) // TODO let user choose when > 1
         }
     }
   }

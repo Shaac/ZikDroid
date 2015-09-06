@@ -26,18 +26,6 @@ import org.scaloid.common._
 
 class ZikDroid extends SActivity {
   val bluetooth = new LocalServiceConnection[BoundService]
-  var zik: Option[BluetoothDevice] = None
-
-  def selectZik {
-    Bluetooth.getZikDevices match {
-      case Left(e) => longToast("Bluetooth error: " + e)
-      case Right(devices) =>
-        zik = devices.size match {
-          case 0 => None
-          case _ => Some(devices.head) // TODO let user choose when > 1
-        }
-    }
-  }
 
   lazy val foo = new STextView("This is ZikDroid")
   onCreate {
@@ -51,8 +39,7 @@ class ZikDroid extends SActivity {
       SButton("Disable noise cancellation") onClick { bluetooth(_.enableANC(false)) }
     } padding 20.dip
 
-    selectZik
-    zik map { device => bluetooth(_.associate(device)) }
+    bluetooth(_.selectZik)
     bluetooth(_.connect)
     Alarm.set
   }
