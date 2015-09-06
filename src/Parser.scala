@@ -34,7 +34,15 @@ class Parser(state: State, implicit val ctx: Context) {
     handleEvent(parser)
   }
 
-  def parse(s: String) { parse(new java.io.ByteArrayInputStream(s.getBytes)) }
+  def parse(s: String) {
+    try {
+      parse(new java.io.ByteArrayInputStream(s.getBytes))
+    } catch {
+      case e: Exception =>
+        android.util.Log.w("ZikDroid", "Error parsing: " + s)
+        android.util.Log.w("ZikDroid", "Error: " + e.getMessage)
+    }
+  }
 
   private def handleEvent(parser: XmlPullParser) {
     val event = parser.getEventType
