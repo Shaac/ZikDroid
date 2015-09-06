@@ -27,7 +27,6 @@ import org.scaloid.common._
 class ZikDroid extends SActivity {
   val bluetooth = new LocalServiceConnection[BoundService]
   var zik: Option[BluetoothDevice] = None
-  val filterBattery = new IntentFilter(Intents.BatteryUpdate)
 
   def selectZik {
     Bluetooth.getZikDevices match {
@@ -57,22 +56,13 @@ class ZikDroid extends SActivity {
     bluetooth(_.connect)
     Alarm.set
   }
-  private val receiver = new BroadcastReceiver {
-    def onReceive(context: Context, intent: Intent) {
+
+  broadcastReceiver(new IntentFilter(Intents.BatteryUpdate)) {
+    (context, intent) =>
       intent.getAction match {
         case Intents.BatteryUpdate =>
           bluetooth(_.getState map { x =>
           x.batteryLevel map { y => foo.text = "Battery: " + y}  })
       }
-    }
-  }
-
-  override def onPause() {
-    unregisterReceiver(receiver)
-    super.onPause
-  }
-  override def onResume() {
-    super.onResume
-    registerReceiver(receiver, filterBattery)
   }
 }
