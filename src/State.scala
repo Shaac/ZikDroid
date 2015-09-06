@@ -20,4 +20,6 @@ package me.shaac.zikdroid
 class State {
   var batteryLevel: Option[Int] = None
   var batteryState: Option[String] = None
+
+  var noiseCancellation: Option[Boolean] = None
 }

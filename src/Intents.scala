@@ -20,10 +20,10 @@ package me.shaac.zikdroid
 import android.content.{Context, Intent}
 
 object Intents {
-  val BatteryUpdate = "me.shaac.zikdroid.BATTERY_UPDATE"
+  val Update = "me.shaac.zikdroid.UPDATE"
 
-  def broadcastBatteryUpdate(implicit ctx: Context) {
-    broadcastIntent(ctx, BatteryUpdate)
+  def broadcastUpdate(implicit ctx: Context) {
+    broadcastIntent(ctx, Update)
   }
 
   private def broadcastIntent(context: Context, name: String) {

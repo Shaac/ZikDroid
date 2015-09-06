@@ -39,13 +39,17 @@ class BoundService extends LocalService {
     connection map { _.disconnect }
     connect
   }
-  def getBattery: Option[Int] =
-    connection flatMap { _.getBattery } match {
+  def getBattery: Option[Int] = {
+    connection map { _.getBattery }
+    getState flatMap { _.batteryLevel } match {
       case Some(level) => Some(level)
       case None =>
         selectZik
         if (reconnect) getBattery else None
     }
+  }
+  def getANC { connection map { _.getANC }}
+
   def enableANC(enable: Boolean) {
     connection flatMap { _.enableANC(enable) } match {
       case Some(_) => {}

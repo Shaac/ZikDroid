@@ -57,10 +57,14 @@ class Connection(device: BluetoothDevice, context: Context) {
     output = None
   }
 
-  def getBattery: Option[Int] = {
+  def getBattery {
     write(getRequest(API.BatteryGet))
     read
-    state.batteryLevel
+  }
+
+  def getANC {
+    write(getRequest(API.ANCEnableGet))
+    read
   }
 
   def enableANC(enable: Boolean): Option[Unit] = {

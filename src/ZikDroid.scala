@@ -27,6 +27,7 @@ import org.scaloid.common._
 class ZikDroid extends SActivity {
   private val bluetooth = new LocalServiceConnection[BoundService]
   private lazy val battery = new STextView
+  private lazy val anc = new SToggleButton("off") textOn "on" textOff "off"
 
   onCreate {
     contentView = new SVerticalLayout {
@@ -34,9 +35,14 @@ class ZikDroid extends SActivity {
         case t: STextView => t textSize 20.dip
       }
       battery.here
-      SButton("Battery") onClick { bluetooth(_.getBattery) }
-      SButton("Enable noise cancellation") onClick { bluetooth(_.enableANC(true)) }
-      SButton("Disable noise cancellation") onClick { bluetooth(_.enableANC(false)) }
+      SButton("Refresh battery") onClick { bluetooth(_.getBattery) }
+      SButton("Refresh ANC") onClick { bluetooth(_.getANC) }
+      new SLinearLayout {
+        STextView("Noise cancellation: ")
+        anc.here onCheckedChanged {
+          (button: Any, bool: Boolean) => bluetooth(_.enableANC(bool))
+        }
+      }.wrap.here
     } padding 20.dip
 
     bluetooth(_.selectZik)
@@ -45,7 +51,7 @@ class ZikDroid extends SActivity {
     Alarm.set
   }
 
-  broadcastReceiver(new IntentFilter(Intents.BatteryUpdate)) {
+  broadcastReceiver(new IntentFilter(Intents.Update)) {
     (context, intent) => refresh(bluetooth(_.getState, None))
   }
 
@@ -53,6 +59,11 @@ class ZikDroid extends SActivity {
     state flatMap { _.batteryLevel } match {
       case None => battery text "Battery: unknown"
       case Some(level) => battery text ("Battery: " + level + "%")
+    }
+
+    state flatMap { _.noiseCancellation } match {
+      case None => anc clickable false setText "unknown"
+      case Some(bool) => anc clickable true checked bool
     }
   }
 }

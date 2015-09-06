@@ -68,9 +68,18 @@ class Parser(state: State, implicit val ctx: Context) {
   private def parseAnswer(parser: XmlPullParser) {
     parser.nextTag // Enter <answer>
     parser.getName.toLowerCase match {
+      case "audio" => parseAudio(parser)
       case "system" => parseSystem(parser)
     }
     parser.nextTag // Leave <answer>
+  }
+
+  private def parseAudio(parser: XmlPullParser) {
+    parser.nextTag // Enter <audio>
+    parser.getName.toLowerCase match {
+      case "noise_cancellation" => parseNoiseCancellation(parser)
+    }
+    parser.nextTag // Leave <audio>
   }
 
   private def parseSystem(parser: XmlPullParser) {
@@ -85,6 +94,12 @@ class Parser(state: State, implicit val ctx: Context) {
     state.batteryLevel =
       Try(parser.getAttributeValue(null, "level").toInt).toOption
     state.batteryState = Try(parser.getAttributeValue(null, "state")).toOption
-    Intents.broadcastBatteryUpdate
+    Intents.broadcastUpdate
+  }
+
+  private def parseNoiseCancellation(parser: XmlPullParser) {
+    state.noiseCancellation =
+      Try(parser.getAttributeValue(null, "enabled").toBoolean).toOption
+    Intents.broadcastUpdate
   }
 }
