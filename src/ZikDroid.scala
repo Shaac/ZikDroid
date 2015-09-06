@@ -25,15 +25,15 @@ import android.content.{BroadcastReceiver, Context, Intent, IntentFilter}
 import org.scaloid.common._
 
 class ZikDroid extends SActivity {
-  val bluetooth = new LocalServiceConnection[BoundService]
+  private val bluetooth = new LocalServiceConnection[BoundService]
+  private lazy val battery = new STextView
 
-  lazy val foo = new STextView("This is ZikDroid")
   onCreate {
     contentView = new SVerticalLayout {
       style {
         case t: STextView => t textSize 20.dip
       }
-      foo.here
+      battery.here
       SButton("Battery") onClick { bluetooth(_.getBattery) }
       SButton("Enable noise cancellation") onClick { bluetooth(_.enableANC(true)) }
       SButton("Disable noise cancellation") onClick { bluetooth(_.enableANC(false)) }
@@ -41,14 +41,18 @@ class ZikDroid extends SActivity {
 
     bluetooth(_.selectZik)
     bluetooth(_.connect)
+    refresh(bluetooth(_.getState, None))
     Alarm.set
   }
 
   broadcastReceiver(new IntentFilter(Intents.BatteryUpdate)) {
-    (context, intent) => bluetooth(_.getState, None) map refresh
+    (context, intent) => refresh(bluetooth(_.getState, None))
   }
 
-  def refresh(state: State) {
-    state.batteryLevel map { level => foo text ("Battery: " + level + "%") }
+  def refresh(state: Option[State]) {
+    state flatMap { _.batteryLevel } match {
+      case None => battery text "Battery: unknown"
+      case Some(level) => battery text ("Battery: " + level + "%")
+    }
   }
 }
