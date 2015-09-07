@@ -39,13 +39,11 @@ class BoundService extends LocalService {
     connection map { _.disconnect }
     connect
   }
-  def getBattery: Option[Int] = {
-    connection map { _.getBattery }
-    getState flatMap { _.batteryLevel } match {
-      case Some(level) => Some(level)
-      case None =>
-        selectZik
-        if (reconnect) getBattery else None
+  def getBattery: Boolean = {
+    if (connection map { _.getBattery } getOrElse false) true
+    else {
+      selectZik
+      if (reconnect) getBattery else false
     }
   }
   def getANC { connection map { _.getANC }}
@@ -70,18 +68,20 @@ class BoundService extends LocalService {
   }
   override def onStartCommand(intent: Intent, x: Int, y: Int) = {
     getBattery match {
-      case None => longToast("Error getting battery")
-      case Some(level) => if (level <= 20) {
-        val builder = new Builder(this)
-          .setSmallIcon(R.drawable.ic_notify)
-          .setLargeIcon(
-            BitmapFactory.decodeResource(getResources, R.drawable.ic_launcher))
-          .setContentTitle("ZikDroid")
-          .setContentText("Battery level: " + level + "%")
-          .setAutoCancel(true)
-        builder setContentIntent pendingActivity[ZikDroid];
-        notificationManager.notify(1, builder.build);
-      } else notificationManager.cancelAll
+      case false => longToast("Error getting battery")
+      case true => getState flatMap { _.batteryLevel } map { level =>
+        if (level <= 20) {
+          val builder = new Builder(this)
+            .setSmallIcon(R.drawable.ic_notify)
+            .setLargeIcon(
+              BitmapFactory.decodeResource(getResources, R.drawable.ic_launcher))
+            .setContentTitle("ZikDroid")
+            .setContentText("Battery level: " + level + "%")
+            .setAutoCancel(true)
+          builder setContentIntent pendingActivity[ZikDroid]
+          notificationManager.notify(1, builder.build)
+        } else notificationManager.cancelAll
+      }
     }
   1
   }

@@ -57,12 +57,12 @@ class Connection(device: BluetoothDevice, context: Context) {
     output = None
   }
 
-  def getBattery {
+  def getBattery: Boolean = {
     write(getRequest(API.BatteryGet))
     read
   }
 
-  def getANC {
+  def getANC: Boolean = {
     write(getRequest(API.ANCEnableGet))
     read
   }
@@ -73,11 +73,12 @@ class Connection(device: BluetoothDevice, context: Context) {
     if (input.isEmpty) None else Some(Unit)
   }
 
-  private def read {
+  private def read: Boolean = {
     skip(7)
     val data = new Array[Byte](1024)
     val size = input flatMap { x => Try(x read data).toOption }
     size map { new String(data, 0, _) } map parser.parse
+    size.isDefined
   }
   private def skip(i: Int): Boolean =
     Try(input map { _ skip i }).toOption != None
