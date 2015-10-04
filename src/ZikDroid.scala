@@ -56,9 +56,13 @@ class ZikDroid extends SActivity {
   }
 
   def refresh(state: Option[State]) {
-    state flatMap { _.batteryLevel } match {
+    state flatMap { _.batteryState } match {
       case None => battery text "Battery: unknown"
-      case Some(level) => battery text ("Battery: " + level + "%")
+      case Some(status) =>
+        if (status == "charging")
+          battery text "Battery: charging"
+        else
+          battery text ("Battery: " + state.get.batteryLevel.get + "%")
     }
 
     state flatMap { _.noiseCancellation } match {
