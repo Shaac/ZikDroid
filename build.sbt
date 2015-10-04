@@ -21,5 +21,4 @@ libraryDependencies += "com.android.support" % "support-v4" % "21.0.3"
 run <<= run in Android
 install <<= install in Android
 
-retrolambdaEnable in Android := false // falster build time
 antLayoutDetector in Android := () // I am just fine with ant for now
